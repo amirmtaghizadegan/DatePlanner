@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Mission Control</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body class="app-body">
+
+<main class="shell wide">
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">Admin panel</p>
+            <h1>Mission Control</h1>
+        </div>
+
+        <a class="button secondary" href="/logout">Logout</a>
+    </header>
+
+    <section class="stats-grid">
+        <div class="stat">
+            <span>{{ stats.users }}</span>
+            <p>Users</p>
+        </div>
+        <div class="stat">
+            <span>{{ stats.submissions }}</span>
+            <p>Results</p>
+        </div>
+        <div class="stat">
+            <span>{{ stats.activities }}</span>
+            <p>Activities</p>
+        </div>
+        <div class="stat">
+            <span>{{ stats.locations }}</span>
+            <p>Locations</p>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="section-heading">
+            <p class="eyebrow">Create access</p>
+            <h2>Users</h2>
+        </div>
+
+        <form class="inline-form" action="/admin/create-user" method="POST">
+            <input name="username" placeholder="Username">
+            <input name="password" type="password" placeholder="Password">
+            <button>Create User</button>
+        </form>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Submissions</th>
+                        <th>Last result</th>
+                        <th>Password</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.role }}</td>
+                        <td>{{ user.submission_count }}</td>
+                        <td>{{ user.last_submission_at or "No result yet" }}</td>
+                        <td>
+                            <form class="password-form" action="/admin/change-password" method="POST">
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <input name="password" type="password" placeholder="New password">
+                                <button>Change</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel stack">
+        <div class="section-heading">
+            <p class="eyebrow">Manage choices</p>
+            <h2>Options</h2>
+        </div>
+
+        <form class="reset-form" action="/admin/reset-options" method="POST">
+            <div>
+                <strong>Reset current options</strong>
+                <small>Hides all active activities and locations, but keeps them archived for restore.</small>
+            </div>
+            <button class="danger-button">Reset Options</button>
+        </form>
+
+        <div class="admin-grid">
+            <div>
+                <h3>Picked date and time</h3>
+                <ul class="list">
+                    {% for item in date_time_choices %}
+                    <li>
+                        <span>{{ item.title }}</span>
+                        <small>{{ item.pick_count }} picks</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div>
+                <h3>Locations</h3>
+                <form class="stacked-form" action="/admin/create-location" method="POST" enctype="multipart/form-data">
+                    <input name="title" placeholder="Downtown cinema">
+                    <input name="image" type="file" accept="image/*">
+                    <button>Add Location</button>
+                </form>
+
+                <ul class="list">
+                    {% for item in locations %}
+                    <li>
+                        <div class="option-admin-row">
+                            {% if item.image_path %}
+                            <img class="thumb" src="{{ item.image_path }}" alt="">
+                            {% endif %}
+                            <div>
+                                <span>{{ item.title }}</span>
+                                <small>{{ item.pick_count }} picks</small>
+                            </div>
+                        </div>
+                        <form class="image-form" action="/admin/update-option-image" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="option_type" value="location">
+                            <input type="hidden" name="option_id" value="{{ item.id }}">
+                            <input name="image" type="file" accept="image/*">
+                            <button>Image</button>
+                        </form>
+                        <form action="/admin/delete-location" method="POST">
+                            <input type="hidden" name="location_id" value="{{ item.id }}">
+                            <button class="danger-button">Archive</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <h3 class="subheading">Stored locations</h3>
+                <ul class="list">
+                    {% for item in archived_locations %}
+                    <li>
+                        <div class="option-admin-row">
+                            {% if item.image_path %}
+                            <img class="thumb" src="{{ item.image_path }}" alt="">
+                            {% endif %}
+                            <div>
+                                <span>{{ item.title }}</span>
+                                <small>Archived</small>
+                            </div>
+                        </div>
+                        <form action="/admin/restore-option" method="POST">
+                            <input type="hidden" name="option_type" value="location">
+                            <input type="hidden" name="option_id" value="{{ item.id }}">
+                            <button>Restore</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div>
+                <h3>Activities</h3>
+                <form class="stacked-form" action="/admin/create-activity" method="POST" enctype="multipart/form-data">
+                    <input name="title" placeholder="Watch a movie">
+                    <input name="image" type="file" accept="image/*">
+                    <button>Add Activity</button>
+                </form>
+
+                <ul class="list">
+                    {% for item in activities %}
+                    <li>
+                        <div class="option-admin-row">
+                            {% if item.image_path %}
+                            <img class="thumb" src="{{ item.image_path }}" alt="">
+                            {% endif %}
+                            <div>
+                                <span>{{ item.title }}</span>
+                                <small>{{ item.pick_count }} picks</small>
+                            </div>
+                        </div>
+                        <form class="image-form" action="/admin/update-option-image" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="option_type" value="activity">
+                            <input type="hidden" name="option_id" value="{{ item.id }}">
+                            <input name="image" type="file" accept="image/*">
+                            <button>Image</button>
+                        </form>
+                        <form action="/admin/delete-activity" method="POST">
+                            <input type="hidden" name="activity_id" value="{{ item.id }}">
+                            <button class="danger-button">Archive</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <h3 class="subheading">Stored activities</h3>
+                <ul class="list">
+                    {% for item in archived_activities %}
+                    <li>
+                        <div class="option-admin-row">
+                            {% if item.image_path %}
+                            <img class="thumb" src="{{ item.image_path }}" alt="">
+                            {% endif %}
+                            <span>{{ item.title }}</span>
+                        </div>
+                        <form action="/admin/restore-option" method="POST">
+                            <input type="hidden" name="option_type" value="activity">
+                            <input type="hidden" name="option_id" value="{{ item.id }}">
+                            <button>Restore</button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="section-heading">
+            <p class="eyebrow">Track answers</p>
+            <h2>Results</h2>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>User</th>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Activity</th>
+                        <th>Location</th>
+                        <th>Expires</th>
+                        <th>Status</th>
+                        <th>Suggestions</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in submissions %}
+                    <tr>
+                        <td>{{ item.created_at }}</td>
+                        <td>{{ item.username }}</td>
+                        <td>{{ item.day_choice or item.date_choice or "-" }}</td>
+                        <td>{{ item.time_choice or "-" }}</td>
+                        <td>{{ item.selected_activity or item.activity_choice or item.custom_activity or "-" }}</td>
+                        <td>{{ item.selected_location or item.location_choice or item.custom_location or "-" }}</td>
+                        <td>{{ item.expires_at or "-" }}</td>
+                        <td>{{ item.status or "active" }}</td>
+                        <td>
+                            {% if item.custom_date %}
+                            <div><b>Time:</b> {{ item.custom_date }}</div>
+                            {% endif %}
+                            {% if item.custom_activity %}
+                            <div><b>Activity:</b> {{ item.custom_activity }}</div>
+                            {% endif %}
+                            {% if item.custom_location %}
+                            <div><b>Location:</b> {{ item.custom_location }}</div>
+                            {% endif %}
+                            {% if not item.custom_date and not item.custom_activity and not item.custom_location %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form action="/submission/delete" method="POST">
+                                <input type="hidden" name="submission_id" value="{{ item.id }}">
+                                <button class="danger-button">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+</body>
+
+</html>

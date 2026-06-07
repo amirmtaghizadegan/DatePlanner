@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body class="app-body">
+
+<main class="shell">
+    <header class="topbar">
+        <div>
+            <p class="eyebrow">Date planning</p>
+            <h1>Welcome, {{ username }}</h1>
+        </div>
+
+        <a class="button secondary" href="/logout">Logout</a>
+    </header>
+
+    <form class="panel stack" action="/submit" method="POST">
+        <section>
+            <div class="section-heading">
+                <p class="eyebrow">Step 1</p>
+                <h2>Pick a day</h2>
+            </div>
+
+            <div class="option-grid days-grid">
+                {% for item in days %}
+                <label class="option-tile compact-tile">
+                    <input type="radio" name="day_choice" value="{{ item }}" required>
+                    <span>{{ item }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section>
+            <div class="section-heading">
+                <p class="eyebrow">Step 2</p>
+                <h2>Pick a time</h2>
+            </div>
+
+            <div class="option-grid time-grid">
+                {% for item in times %}
+                <label class="option-tile compact-tile">
+                    <input type="radio" name="time_choice" value="{{ item }}" required>
+                    <span>{{ item }}</span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <!-- <input name="custom_day_time" placeholder="Suggest another day or time"> -->
+        </section>
+
+        <section>
+            <div class="section-heading">
+                <p class="eyebrow">Step 3</p>
+                <h2>Pick an activity</h2>
+            </div>
+
+            <div class="option-grid">
+                {% for item in activities %}
+                <label class="option-tile activity-tile">
+                    <input type="radio" name="activity_id" value="{{ item.id }}">
+                    {% if item.image_path %}
+                    <img class="option-image" src="{{ item.image_path }}" alt="">
+                    {% endif %}
+                    <span>{{ item.title }}</span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <input name="custom_activity" placeholder="Suggest another activity">
+        </section>
+
+        <section>
+            <div class="section-heading">
+                <p class="eyebrow">Step 4</p>
+                <h2>Pick a location</h2>
+            </div>
+
+            <div class="option-grid">
+                {% for item in locations %}
+                <label class="option-tile activity-tile">
+                    <input type="radio" name="location_id" value="{{ item.id }}">
+                    {% if item.image_path %}
+                    <img class="option-image" src="{{ item.image_path }}" alt="">
+                    {% endif %}
+                    <span>{{ item.title }}</span>
+                </label>
+                {% endfor %}
+            </div>
+
+            <input name="custom_location" placeholder="Suggest another location">
+        </section>
+
+        <button type="submit">Submit Choices</button>
+    </form>
+
+    <section class="panel">
+        <div class="section-heading">
+            <p class="eyebrow">Your choices</p>
+            <h2>Current plans</h2>
+        </div>
+
+        {% if submissions %}
+        <div class="plans-list">
+            {% for item in submissions %}
+            <article class="plan-row user-plan-row">
+                <div>
+                    <strong>{{ item.day_choice or item.date_choice or "-" }}</strong>
+                    <small>{{ item.time_choice or item.custom_date or "-" }}</small>
+                </div>
+
+                <div>
+                    <span>Activity</span>
+                    <p>{{ item.selected_activity or item.activity_choice or item.custom_activity or "-" }}</p>
+                </div>
+
+                <div>
+                    <span>Location</span>
+                    <p>{{ item.selected_location or item.location_choice or item.custom_location or "-" }}</p>
+                </div>
+
+                <form action="/submission/delete" method="POST">
+                    <input type="hidden" name="submission_id" value="{{ item.id }}">
+                    <button class="danger-button">Delete</button>
+                </form>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty-state">No current choices yet.</p>
+        {% endif %}
+    </section>
+</main>
+
+</body>
+
+</html>

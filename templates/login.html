@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>{{ title }}</title>
+
+    <link rel="stylesheet"
+          href="/static/css/style.css">
+
+</head>
+
+<body>
+
+<div class="background"></div>
+
+<div class="card">
+
+    <h1>{{ title }}</h1>
+
+    <p class="subtitle">
+        Agent Authentication Required
+    </p>
+
+    <form
+        method="POST"
+        action="/login">
+
+        <input
+            name="username"
+            placeholder="Username">
+
+        <input
+            name="password"
+            type="password"
+            placeholder="Password">
+
+        <button type="submit">
+            Enter Mission
+        </button>
+
+    </form>
+
+</div>
+
+</body>
+</html>

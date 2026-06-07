@@ -1,0 +1,5 @@
+# config.py
+
+SITE_TITLE = "Operation Date Night"
+
+SECRET_KEY = "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET_KEY"
